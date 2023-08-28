@@ -39,6 +39,19 @@
                         <option value="{{ $type->id }}" {{ $project->type->id == $type->id ? 'selected' : '' }}>{{ $type->name }}</option>
                     @endforeach
                 </select>
+                <div class="mb-5">
+                    <label for="technologies" class="form-label">
+                        Technologies
+                    </label>
+                    <div>
+                        @foreach ($technologies as $technology)
+                            <input type="checkbox" name="technologies[]" class="form-check-input" id="technologies" value="{{ $technology->id }}" @if ($project->technologies->contains($technology->id) ) checked @endif>
+                            <label for="technologies" class="form-check-label me-3">
+                                {{ $technology->name }}
+                            </label>
+                        @endforeach
+                    </div>
+                </div>
                 <div class="mb-3">
                     <label for="description" class="form-label">
                         Description:
