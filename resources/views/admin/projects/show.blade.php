@@ -29,6 +29,13 @@
             <p>
                 Type: {{ $project->type->name }}
             </p>
+            @if ( count($project->technologies) > 0)
+                <p>
+                    @foreach ($project->technologies as $technology)
+                        {{ $technology->name }} --
+                    @endforeach
+                </p>
+            @endif
             <p>
                 Description: {{ $project->description }}
             </p>
