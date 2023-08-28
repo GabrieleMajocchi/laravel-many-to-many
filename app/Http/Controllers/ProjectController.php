@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Project;
 use App\Models\Type;
+use App\Models\Technology;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
@@ -30,7 +31,8 @@ class ProjectController extends Controller
     public function create()
     {
         $types = Type::all();
-        return view('admin.projects.create', compact('types'));
+        $technologies = Technology::all();
+        return view('admin.projects.create', compact('types', 'technologies'));
     }
 
     /**
@@ -44,7 +46,8 @@ class ProjectController extends Controller
             'lang'=> 'required|min:3|max:255',
             'link'=> 'required|unique:projects|min:5|max:255',
             'image' => ['image', 'max:512'],
-            'type_id'=> ['required']
+            'type_id'=> ['required', 'exists:types,id'],
+            'technologies' => ['exists:technologies,id'],
         ]);
 
         $data['date'] = $request->date;
@@ -57,6 +60,9 @@ class ProjectController extends Controller
 
         $newProject = Project::create($data);
         $newProject->save();
+        $newProject->technologies()->attach($data['technologies']);
+
+
         return redirect()->route('projects.show', $newProject->id)->with('stored', $newProject->title);
     }
 
@@ -77,7 +83,8 @@ class ProjectController extends Controller
     {
         $project = Project::findOrFail($id);
         $types = Type::all();
-        return view('admin.projects.edit', compact('project'), compact('types'));
+        $technologies = Technology::all();
+        return view('admin.projects.edit', compact('project', 'types', 'technologies'));
     }
 
     /**
@@ -91,7 +98,8 @@ class ProjectController extends Controller
             'lang'=> ['required', 'min:3', 'max:255'],
             'link'=> ['required', 'min:5', 'max:255', Rule::unique('projects')->ignore($project->id)],
             'image' => ['image', 'max:512'],
-            'type_id'=> ['required']
+            'type_id'=> ['required', 'exists:types,id'],
+            'technologies' => ['exists:technologies,id']
         ]);
 
         $data['date'] = $request->date;
@@ -103,6 +111,10 @@ class ProjectController extends Controller
         }
 
         $project->update($data);
+
+        if ($request->has('technologies')){
+            $project->technologies()->sync( $request->technologies);
+        }
 
         return redirect()->route("projects.show", $project->id)->with("updated", $project->title);
     }
@@ -149,6 +161,7 @@ class ProjectController extends Controller
     {
         $project = Project::onlyTrashed()->findOrFail($id);
         Storage::delete($project->image);
+        $project->technologies()->detach();
         $project->forceDelete();
 
         return redirect()->route("projects.index")->with("hardDelete", $project->title);
