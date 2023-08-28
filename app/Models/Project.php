@@ -12,7 +12,7 @@ class Project extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'title', 'description', 'lang', 'link', 'date', 'image',  'user_id', 'type_id',
+        'title', 'description', 'lang', 'link', 'date', 'image',  'user_id', 'type_id'
     ];
 
     public function type(){
@@ -21,5 +21,9 @@ class Project extends Model
 
     public function user(){
         return $this->belongsTo(User::class);
+    }
+
+    public function technologies(){
+        return $this->belongsToMany(Technology::class);
     }
 }
